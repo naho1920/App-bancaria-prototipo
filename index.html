@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JP Morgan — Banca Digital</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide-react/dist/umd/lucide-react.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #e8e8ec;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    ::-webkit-scrollbar { width: 0; height: 0; }
+
+    input { outline: none; }
+    input::placeholder { color: #8d969e; }
+
+    button { transition: opacity 0.15s ease; }
+    button:active { opacity: 0.7; }
+
+    .phone {
+      width: 390px;
+      height: 844px;
+      background: #ffffff;
+      border-radius: 50px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    .screen {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen-scroll {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    /* Screen transitions */
+    @keyframes slideInRight {
+      from { transform: translateX(100%); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes slideInLeft {
+      from { transform: translateX(-100%); opacity: 0; }
+      to   { transform: translateX(0);     opacity: 1; }
+    }
+    .slide-in-right { animation: slideInRight 0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+    .slide-in-left  { animation: slideInLeft  0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards; }
+
+    @media (max-width: 430px) {
+      body { background: #ffffff; align-items: flex-start; }
+      .phone {
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    /* ── Icons ── */
+    const {
+      ArrowLeft, Check, Send, Download, Clock, CreditCard,
+      Plus, Eye, EyeOff, User, Building2, Hash, Delete,
+      ShoppingBag, Repeat, ArrowDownLeft, ChevronRight,
+      Shield, Bell
+    } = LucideReact;
+
+    /* ── DS tokens ── */
+    const C = {
+      dark:    '#191c1f',
+      white:   '#ffffff',
+      surface: '#f4f4f4',
+      blue:    '#494fdf',
+      teal:    '#00a87e',
+      danger:  '#e23b4a',
+      sec:     '#505a63',
+      muted:   '#8d969e',
+      border:  '#c9c9cd',
+    };
+
+    const T = {
+      display: "'Space Grotesk', sans-serif",
+      body:    "'Inter', sans-serif",
+    };
+
+    /* ── Reusable pill button ── */
+    const Btn = ({ label, icon: Icon, onClick, variant = 'dark', disabled = false, style: extra = {} }) => {
+      const styles = {
+        dark:     { background: disabled ? C.border : C.dark,    color: C.white,   border: 'none' },
+        blue:     { background: disabled ? C.border : C.blue,    color: C.white,   border: 'none' },
+        outlined: { background: 'transparent', color: C.dark,  border: `2px solid ${C.dark}` },
+        teal:     { background: C.teal, color: C.white, border: 'none' },
+      };
+      return (
+        <button
+          onClick={disabled ? undefined : onClick}
+          style={{
+            width: '100%',
+            padding: '14px 32px',
+            borderRadius: '9999px',
+            fontFamily: T.display,
+            fontSize: '16px',
+            fontWeight: '500',
+            cursor: disabled ? 'not-allowed' : 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            letterSpacing: '0.16px',
+            ...styles[variant],
+            ...extra,
+          }}
+        >
+          {Icon && <Icon size={18} />}
+          {label}
+        </button>
+      );
+    };
+
+    /* ── Input field ── */
+    const Field = ({ label, value, onChange, placeholder, type = 'text', icon: Icon, rightSlot }) => (
+      <div>
+        <label style={{ display: 'block', fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: C.dark, marginBottom: '8px', letterSpacing: '0.16px' }}>
+          {label}
+        </label>
+        <div style={{ position: 'relative' }}>
+          {Icon && (
+            <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: C.muted, display: 'flex', pointerEvents: 'none' }}>
+              <Icon size={18} />
+            </div>
+          )}
+          <input
+            type={type}
+            value={value}
+            onChange={onChange}
+            placeholder={placeholder}
+            style={{
+              width: '100%',
+              padding: `14px ${rightSlot ? '48px' : '16px'} 14px ${Icon ? '44px' : '16px'}`,
+              background: C.surface,
+              border: 'none',
+              borderRadius: '12px',
+              fontFamily: T.body,
+              fontSize: '15px',
+              color: C.dark,
+              letterSpacing: '0.16px',
+            }}
+          />
+          {rightSlot && (
+            <div style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', display: 'flex' }}>
+              {rightSlot}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+
+    /* ── JP Morgan Logo ── */
+    const Logo = () => (
+      <svg xmlns="http://www.w3.org/2000/svg" width="168" height="35" viewBox="0 333.094 612 125.812" aria-label="JP Morgan">
+        <path fill="#321C0F" d="M62.393 336.225H50.41v58.776c0 22.075-7.771 28.714-27.472 28.714C6.423 423.662 0 417.293 0 409.035c0-1.89.701-7.988 6.746-7.988 5.991 0 6.369 4.048 6.369 10.633 0 2.752 1.134 8.149 8.204 8.149 11.227 0 16.246-5.127 16.246-23.262v-60.342h-11.55v-3.131h36.378v3.131zm2.429 73.457c-1.997 0-3.724.647-5.073 2.051-1.403 1.403-2.105 3.076-2.105 5.073s.702 3.67 2.105 4.966c1.403 1.403 3.076 2.051 5.073 2.051s3.67-.647 5.128-2.051c1.403-1.296 2.104-2.969 2.104-4.966 0-2.051-.701-3.67-2.104-5.073s-3.078-2.051-5.128-2.051m77.991 0c-1.997 0-3.67.647-5.073 2.051s-2.052 3.076-2.052 5.073.648 3.67 2.052 4.966c1.457 1.403 3.13 2.051 5.073 2.051 1.997 0 3.724-.647 5.127-2.051 1.403-1.296 2.105-2.969 2.105-4.966 0-2.051-.702-3.67-2.105-5.073s-3.13-2.051-5.127-2.051m-22.615-76.588c27.904 0 32.654 10.524 32.654 25.529 0 14.843-7.719 25.691-35.299 25.691l-9.499.054v22.398c0 2.753.324 4.103.972 5.613.701 1.781 2.213 3.131 4.479 4.048 1.619.594 4.103.918 7.341 1.025v3.995H82.525v-3.995c3.238-.107 5.667-.432 7.286-1.133 2.159-.918 3.616-2.267 4.265-4.048.593-1.565.917-1.835.917-7.232v-68.815H84.522v-3.077l35.676-.053m-4.912 47.821c16.84 0 25.205-7.286 25.205-21.535 0-14.195-4.642-22.885-25.907-22.885l-6.584.107v44.366h7.286m147.131 31.089c-.486-1.565-.756-3.509-.756-5.991v-69.841h9.229v-3.131h-22.507c-.271.81-27.095 67.521-27.095 67.521a.733.733 0 0 1-.594.378c-.324 0-.54-.162-.647-.378 0 0-28.498-66.711-28.821-67.521h-24.99v3.076H176.6v67.143s-.216 6.207-.216 6.261c-.162 1.619-.702 3.077-1.512 4.264-.863 1.242-2.213 2.213-3.994 2.861-1.188.378-2.968.647-5.127.701v3.994h25.421V417.4c-2.104-.107-3.022-.323-4.264-.701-1.835-.594-3.185-1.512-4.102-2.807-.81-1.188-1.35-2.645-1.512-4.372 0 0-.27-6.207-.27-6.261v-57.806h1.457s32.168 75.131 32.546 75.995h2.698l30.495-75.131h.756v59.748c0 2.591-.271 4.642-.756 6.207-.594 1.835-1.889 3.185-3.778 4.102-1.403.647-3.508.972-6.314 1.079v3.995h34.759v-3.995c-2.807-.161-4.966-.485-6.423-1.133-2.158-1.024-3.454-2.428-4.047-4.263m46.74-55.322c17.163 0 29.9 11.712 29.9 33.193 0 27.58-19.861 34.11-30.278 34.11-5.289 0-29.739-2.051-29.739-33.517-.053-21.48 11.605-33.786 30.117-33.786m-.215 63.418c12.468 0 16.3-7.772 16.3-30.387 0-15.706-.055-29.092-16.3-29.092-15.005 0-16.084 12.954-16.084 30.225 0 22.291 2.104 29.254 16.084 29.254m78.638-62.447c-11.064 0-14.896 6.531-17.974 13.224 0 0-.81-.054-.863-.054-.054.054-2.213-12.63-2.213-12.63h-21.05v3.347h11.551V405.095c0 4.317-.216 7.664-1.35 9.499-1.295 2.105-3.94 2.915-8.366 2.915h-1.889v3.994h36v-3.994h-1.943c-4.695 0-7.124-1.025-8.365-3.077-1.134-1.78-1.673-4.857-1.673-9.337v-22.561c0-7.61 6.099-16.354 13.007-16.354 7.232 0 7.448 10.363 15.221 6.64 5.505-2.592 4.264-15.114-10.093-15.114m143.298 57.265c2.267 0 5.02-2.375 5.613-6.854h2.159c-.594 10.255-5.613 14.357-13.979 14.357-7.448 0-11.55-5.29-12.252-9.662-4.371 4.642-10.849 10.472-21.104 10.472-9.229 0-16.407-7.125-16.839-15.221-1.241-20.726 26.015-22.938 37.511-23.964V373.52c0-3.832-.863-6.908-2.536-9.229-1.781-2.429-4.966-3.616-9.5-3.616-3.886 0-6.746.972-8.581 2.86-1.728 1.835-2.483 3.832-3.022 7.287-.756 4.695-2.753 6.53-6.315 6.53-1.565 0-2.807-.432-3.939-1.403-1.08-.917-1.619-2.267-1.619-4.21 0-4.156 1.619-7.017 5.721-10.146 4.21-3.238 10.795-4.857 19.7-4.857 9.283 0 15.706 1.727 18.998 5.073 3.347 3.346 4.265 7.232 4.265 12.899v26.446l.216 8.097c.43 3.616 1.617 5.72 5.503 5.72m-18.837-26.986c-8.852 0-24.936 5.883-24.936 17.649 0 3.67 1.296 11.01 10.147 11.01 3.454 0 8.149-1.997 14.303-7.609l.27-.271c.216-.162.216-.27.216-.485v-20.294zm92.349 26.609c-1.565-1.942-1.89-6.207-1.89-9.445v-28.605c0-4.156-.539-7.664-2.104-10.579-1.565-2.807-3.778-4.965-6.531-6.368-2.807-1.403-5.99-2.105-9.499-2.105-12.63 0-18.135 7.287-20.617 12.198h-.972l-2.213-11.442h-19.593v3.292h9.823v43.557c0 3.347-.27 5.775-.756 7.395-.539 1.942-1.78 3.238-3.616 4.048-1.187.485-3.022.81-5.396.917v3.995h31.088v-3.995c-3.13-.27-5.235-1.079-6.368-2.698-1.242-1.728-1.781-4.642-1.781-8.96v-16.677c0-6.963-.055-13.71 2.32-17.92 2.591-4.533 7.286-7.07 12.521-7.07 4.75 0 7.287 1.512 8.798 4.534 1.674 3.4 2.051 9.715 2.051 14.734v20.672c0 3.454-.107 5.937-.323 7.556-.378 1.89-.81 3.455-2.321 4.426-1.079.756-2.752 1.242-4.965 1.403v3.94H612V417.4c-3.832-.162-6.099-.809-7.61-2.806m-140.546-60.396c3.4-1.079 6.207-.27 7.124 3.563.432 1.835.055 4.048-1.025 5.99-1.025 1.943-2.807 3.347-5.613 4.21-2.429.81-5.02.81-7.88.162 1.35 2.915 2.482 7.017 2.482 11.82 0 16.731-12.791 21.751-26.446 23.856-13.925 2.158-17.487 3.832-17.487 8.203 0 2.969 1.835 4.696 11.496 4.696 19.97.972 28.876-.162 35.137 8.42 1.942 2.752 2.914 6.423 2.914 11.011 0 3.346-.863 6.854-2.752 10.255-1.781 3.399-5.128 6.368-9.932 8.797s-11.496 3.725-19.7 3.725c-6.207 0-10.687-.486-17.487-2.537-4.426-1.295-10.255-4.857-10.255-12.359 0-2.268.378-4.156 1.403-5.775 1.134-1.728 3.454-2.753 5.397-2.429 3.454.594 4.479 3.724 3.886 6.692-.701 2.915-.054 7.017 3.293 9.067 4.533 2.807 9.499 3.454 15.598 3.454 7.125 0 12.846-1.241 17.056-3.562 4.534-2.537 6.747-5.938 6.747-10.147 0-3.076-1.08-5.451-3.185-7.07-1.997-1.457-4.75-2.429-8.15-2.86-3.185-.378-8.096-.647-14.95-.702-7.88-.161-14.141-1.079-18.621-2.914-4.048-1.673-7.178-4.642-7.178-10.147 0-9.121 8.527-11.928 18.135-13.871.594-.107.594-.917-.108-1.025-11.28-2.375-16.407-8.852-16.407-22.129 0-11.388 7.718-23.855 25.259-23.855 10.849 0 17.056 3.67 20.294 6.639.972.755 3.185.701 4.48.323 1.295-.432 2.267-1.889 2.752-4.479.647-2.809 1.833-4.428 3.723-5.022m-30.927 46.039c7.664 0 13.17-2.321 13.17-19.862 0-12.252-2.969-20.24-13.17-20.24-8.743 0-12.846 8.744-12.846 20.456-.053 16.677 4.642 19.646 12.846 19.646"/>
+      </svg>
+    );
+
+    /* ════════════════════════════════════════════
+       SCREEN 1 — LOGIN
+    ════════════════════════════════════════════ */
+    const LoginScreen = ({ onLogin }) => {
+      const [user, setUser] = useState('');
+      const [pass, setPass] = useState('');
+      const [show, setShow] = useState(false);
+
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '40px 28px', background: C.white }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '48px' }}>
+            <Logo />
+          </div>
+
+          {/* Heading */}
+          <div style={{ marginBottom: '28px' }}>
+            <h1 style={{ fontFamily: T.display, fontSize: '26px', fontWeight: '500', color: C.dark, marginBottom: '6px', lineHeight: 1.2 }}>
+              Bienvenido de vuelta
+            </h1>
+            <p style={{ fontFamily: T.body, fontSize: '15px', color: C.sec, lineHeight: 1.5, letterSpacing: '0.16px' }}>
+              Ingresa a tu cuenta bancaria
+            </p>
+          </div>
+
+          {/* Fields */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '12px' }}>
+            <Field
+              label="Usuario"
+              value={user}
+              onChange={e => setUser(e.target.value)}
+              placeholder="tu@email.com"
+              icon={User}
+            />
+            <Field
+              label="Contraseña"
+              value={pass}
+              onChange={e => setPass(e.target.value)}
+              placeholder="••••••••"
+              type={show ? 'text' : 'password'}
+              icon={Shield}
+              rightSlot={
+                <button
+                  onClick={() => setShow(s => !s)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 0 }}
+                >
+                  {show ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              }
+            />
+          </div>
+
+          {/* Forgot */}
+          <div style={{ textAlign: 'right', marginBottom: '28px' }}>
+            <span style={{ fontFamily: T.body, fontSize: '13px', color: C.blue, cursor: 'pointer', letterSpacing: '0.16px' }}>
+              ¿Olvidaste tu contraseña?
+            </span>
+          </div>
+
+          <Btn label="Ingresar" onClick={onLogin} variant="dark" />
+
+          <div style={{ textAlign: 'center', marginTop: '24px' }}>
+            <span style={{ fontFamily: T.body, fontSize: '13px', color: C.sec }}>
+              ¿No tienes cuenta?{' '}
+              <span style={{ color: C.blue, fontWeight: '500', cursor: 'pointer' }}>Regístrate</span>
+            </span>
+          </div>
+        </div>
+      );
+    };
+
+    /* ════════════════════════════════════════════
+       SCREEN 2 — DASHBOARD
+    ════════════════════════════════════════════ */
+    const DashboardScreen = ({ onNewTransfer }) => {
+      const [balanceVisible, setBalanceVisible] = useState(true);
+
+      const quickActions = [
+        { Icon: Send,        label: 'Enviar' },
+        { Icon: Download,    label: 'Recibir' },
+        { Icon: CreditCard,  label: 'Pagar' },
+        { Icon: Clock,       label: 'Historial' },
+      ];
+
+      const txs = [
+        { Icon: ShoppingBag,   label: 'Amazon Prime',          sub: 'Hoy, 10:24',  amount: '-$14.99',  pos: false },
+        { Icon: ArrowDownLeft, label: 'Transferencia recibida', sub: 'Ayer, 18:05', amount: '+$500.00', pos: true  },
+        { Icon: Repeat,        label: 'Netflix',                sub: '18 abr',      amount: '-$15.99',  pos: false },
+        { Icon: ShoppingBag,   label: 'Starbucks',              sub: '17 abr',      amount: '-$6.80',   pos: false },
+      ];
+
+      return (
+        <div className="screen-scroll" style={{ background: C.surface }}>
+          {/* Header */}
+          <div style={{ background: C.white, padding: '52px 24px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '3px', letterSpacing: '0.24px' }}>
+                  Buenos días ☀️
+                </p>
+                <h2 style={{ fontFamily: T.display, fontSize: '20px', fontWeight: '500', color: C.dark }}>
+                  Carlos Rodríguez
+                </h2>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '9999px', background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.sec, cursor: 'pointer' }}>
+                  <Bell size={18} />
+                </div>
+                <div style={{ width: '40px', height: '40px', borderRadius: '9999px', background: C.dark, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.display, fontSize: '14px', fontWeight: '600', color: C.white }}>
+                  CR
+                </div>
+              </div>
+            </div>
+
+            {/* Balance Card */}
+            <div style={{ background: C.dark, borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, letterSpacing: '0.24px' }}>
+                  Saldo disponible
+                </p>
+                <button
+                  onClick={() => setBalanceVisible(v => !v)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex', padding: 0 }}
+                >
+                  {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+              </div>
+              <p style={{ fontFamily: T.display, fontSize: '38px', fontWeight: '600', color: C.white, letterSpacing: '-0.5px', marginBottom: '20px', lineHeight: 1 }}>
+                {balanceVisible ? '$24,850.00' : '••••••'}
+              </p>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {[['Cuenta', '•••• 4821'], ['Tipo', 'Checking']].map(([lbl, val]) => (
+                  <div key={lbl} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 14px' }}>
+                    <p style={{ fontFamily: T.body, fontSize: '11px', color: C.muted, marginBottom: '2px' }}>{lbl}</p>
+                    <p style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: C.white }}>{val}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+              {quickActions.map(({ Icon, label }) => (
+                <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={21} color={C.dark} />
+                  </div>
+                  <span style={{ fontFamily: T.body, fontSize: '12px', color: C.sec, letterSpacing: '0.16px' }}>{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div style={{ padding: '16px 24px 0' }}>
+            <Btn label="Nueva Transferencia" icon={Plus} onClick={onNewTransfer} variant="blue" />
+          </div>
+
+          {/* Transactions */}
+          <div style={{ padding: '20px 24px 40px' }}>
+            <p style={{ fontFamily: T.display, fontSize: '16px', fontWeight: '500', color: C.dark, marginBottom: '12px' }}>
+              Movimientos recientes
+            </p>
+            <div style={{ background: C.white, borderRadius: '20px', overflow: 'hidden' }}>
+              {txs.map(({ Icon, label, sub, amount, pos }, i) => (
+                <div key={i} style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px', borderBottom: i < txs.length - 1 ? `1px solid ${C.surface}` : 'none' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: C.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Icon size={17} color={C.sec} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontFamily: T.body, fontSize: '14px', fontWeight: '500', color: C.dark, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{label}</p>
+                    <p style={{ fontFamily: T.body, fontSize: '12px', color: C.muted }}>{sub}</p>
+                  </div>
+                  <span style={{ fontFamily: T.display, fontSize: '14px', fontWeight: '600', color: pos ? C.teal : C.danger, flexShrink: 0 }}>
+                    {amount}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    /* ════════════════════════════════════════════
+       SCREEN 3 — CONTACT
+    ════════════════════════════════════════════ */
+    const ContactScreen = ({ onBack, onContinue }) => {
+      const [form, setForm] = useState({ name: '', bank: '', account: '' });
+      const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
+      const valid = form.name.trim() && form.bank.trim() && form.account.trim();
+
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.white }}>
+          {/* Header */}
+          <div style={{ padding: '52px 24px 24px', flexShrink: 0 }}>
+            <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: C.sec, marginBottom: '20px', padding: 0, fontFamily: T.body, fontSize: '14px' }}>
+              <ArrowLeft size={20} />
+              Volver
+            </button>
+            <h1 style={{ fontFamily: T.display, fontSize: '26px', fontWeight: '500', color: C.dark, marginBottom: '6px' }}>
+              Nueva Transferencia
+            </h1>
+            <p style={{ fontFamily: T.body, fontSize: '14px', color: C.sec, letterSpacing: '0.16px' }}>
+              Ingresa los datos del destinatario
+            </p>
+          </div>
+
+          {/* Form */}
+          <div style={{ flex: 1, padding: '0 24px', display: 'flex', flexDirection: 'column', gap: '18px', overflowY: 'auto' }}>
+            <Field label="Nombre del destinatario" value={form.name}    onChange={set('name')}    placeholder="Ej: María García"        icon={User}      />
+            <Field label="Banco"                   value={form.bank}    onChange={set('bank')}    placeholder="Ej: Bank of America"     icon={Building2} />
+            <Field label="Número de cuenta / CBU"  value={form.account} onChange={set('account')} placeholder="Ej: 0000 1234 5678 9012" icon={Hash}      />
+
+            {/* Tip */}
+            <div style={{ background: '#EEF0FF', borderRadius: '12px', padding: '14px 16px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <Shield size={16} color={C.blue} style={{ flexShrink: 0, marginTop: '1px' }} />
+              <p style={{ fontFamily: T.body, fontSize: '13px', color: C.blue, lineHeight: 1.5 }}>
+                Verifica los datos antes de continuar. Las transferencias son irreversibles.
+              </p>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div style={{ padding: '24px', flexShrink: 0 }}>
+            <Btn label="Continuar" onClick={() => onContinue(form)} variant="dark" disabled={!valid} />
+          </div>
+        </div>
+      );
+    };
+
+    /* ════════════════════════════════════════════
+       SCREEN 4 — AMOUNT
+    ════════════════════════════════════════════ */
+    const AmountScreen = ({ contact, onBack, onTransfer }) => {
+      const [digits, setDigits]  = useState('0');
+      const [decimal, setDecimal] = useState(false);
+      const [cents, setCents]    = useState('');
+
+      const display = decimal
+        ? `${Number(digits).toLocaleString('es-ES')}.${cents}`
+        : Number(digits).toLocaleString('es-ES');
+
+      const tap = k => {
+        if (k === 'back') {
+          if (decimal) {
+            if (cents.length > 0) { setCents(c => c.slice(0, -1)); }
+            else { setDecimal(false); }
+          } else {
+            setDigits(d => d.length > 1 ? d.slice(0, -1) : '0');
+          }
+          return;
+        }
+        if (k === '.') { if (!decimal) { setDecimal(true); setCents(''); } return; }
+        if (decimal) { if (cents.length < 2) setCents(c => c + k); return; }
+        setDigits(d => d === '0' ? k : d.length < 7 ? d + k : d);
+      };
+
+      const numericValue = parseFloat(`${digits}.${cents || '00'}`);
+      const valid = numericValue > 0;
+      const keys  = ['1','2','3','4','5','6','7','8','9','.','0','back'];
+
+      return (
+        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.white }}>
+          {/* Header */}
+          <div style={{ padding: '52px 24px 20px', flexShrink: 0 }}>
+            <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: C.sec, marginBottom: '20px', padding: 0, fontFamily: T.body, fontSize: '14px' }}>
+              <ArrowLeft size={20} />
+              Volver
+            </button>
+
+            {/* Contact pill */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: C.surface, borderRadius: '9999px', padding: '8px 16px 8px 8px', marginBottom: '28px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '9999px', background: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: T.display, fontSize: '13px', fontWeight: '600', color: C.white, flexShrink: 0 }}>
+                {contact.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: C.dark, marginBottom: '0px' }}>
+                  {contact.name}
+                </p>
+                <p style={{ fontFamily: T.body, fontSize: '11px', color: C.muted }}>
+                  {contact.bank}
+                </p>
+              </div>
+            </div>
+
+            {/* Amount display */}
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '8px' }}>
+                ¿Cuánto deseas enviar?
+              </p>
+              <div style={{ fontFamily: T.display, fontSize: display.length > 8 ? '40px' : '54px', fontWeight: '600', color: C.dark, lineHeight: 1, letterSpacing: '-1px', transition: 'font-size 0.1s' }}>
+                ${display}{decimal && cents.length === 0 ? '.' : ''}
+              </div>
+              {valid && (
+                <p style={{ fontFamily: T.body, fontSize: '12px', color: C.muted, marginTop: '6px' }}>
+                  ≈ {numericValue.toLocaleString('es-ES', { style: 'currency', currency: 'USD' })} USD
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Keypad */}
+          <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', padding: '0 12px' }}>
+            {keys.map(k => (
+              <button
+                key={k}
+                onClick={() => tap(k)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '16px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '12px', fontFamily: T.display, fontSize: k === 'back' ? '0' : '26px', fontWeight: '500', color: C.dark }}
+              >
+                {k === 'back' ? <Delete size={24} color={C.dark} /> : k}
+              </button>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ padding: '12px 24px 32px', flexShrink: 0 }}>
+            <Btn label="Transferir" icon={Send} onClick={() => onTransfer(numericValue)} variant="dark" disabled={!valid} />
+          </div>
+        </div>
+      );
+    };
+
+    /* ════════════════════════════════════════════
+       SCREEN 5 — RECEIPT
+    ════════════════════════════════════════════ */
+    const ReceiptScreen = ({ contact, amount, onHome }) => {
+      const now    = new Date();
+      const date   = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+      const time   = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+      const ref    = `JPM-${Math.floor(Math.random() * 9e6 + 1e6)}`;
+      const fmtAmt = amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      const rows = [
+        ['Destinatario', contact.name],
+        ['Banco destino', contact.bank],
+        ['Cuenta / CBU',  contact.account],
+        ['Fecha y hora',  `${date}, ${time}`],
+        ['Referencia',    ref],
+        ['Estado',        '✓ Completada'],
+      ];
+
+      return (
+        <div className="screen-scroll" style={{ background: C.surface }}>
+          <div style={{ padding: '52px 24px 40px' }}>
+            {/* Success badge */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ width: '72px', height: '72px', borderRadius: '9999px', background: C.teal, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+                <Check size={36} color={C.white} strokeWidth={2.5} />
+              </div>
+              <h1 style={{ fontFamily: T.display, fontSize: '22px', fontWeight: '600', color: C.dark, textAlign: 'center', marginBottom: '4px' }}>
+                ¡Transferencia Exitosa!
+              </h1>
+              <p style={{ fontFamily: T.body, fontSize: '14px', color: C.sec, letterSpacing: '0.16px' }}>
+                El dinero está en camino
+              </p>
+            </div>
+
+            {/* Amount Hero */}
+            <div style={{ background: C.dark, borderRadius: '20px', padding: '24px', textAlign: 'center', marginBottom: '14px' }}>
+              <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '8px' }}>Monto transferido</p>
+              <p style={{ fontFamily: T.display, fontSize: '42px', fontWeight: '600', color: C.white, letterSpacing: '-0.5px', lineHeight: 1 }}>
+                ${fmtAmt}
+              </p>
+            </div>
+
+            {/* Ticket */}
+            <div style={{ background: C.white, borderRadius: '20px', overflow: 'hidden', marginBottom: '20px' }}>
+              {/* Dashed divider top */}
+              <div style={{ height: '1px', margin: '0', background: `repeating-linear-gradient(90deg, ${C.border} 0, ${C.border} 8px, transparent 8px, transparent 16px)` }} />
+
+              {rows.map(([lbl, val], i) => (
+                <div key={lbl} style={{ padding: '13px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', borderBottom: i < rows.length - 1 ? `1px solid ${C.surface}` : 'none' }}>
+                  <span style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, flexShrink: 0 }}>{lbl}</span>
+                  <span style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: lbl === 'Estado' ? C.teal : C.dark, textAlign: 'right', wordBreak: 'break-all' }}>
+                    {val}
+                  </span>
+                </div>
+              ))}
+
+              {/* Dashed divider bottom */}
+              <div style={{ height: '1px', background: `repeating-linear-gradient(90deg, ${C.border} 0, ${C.border} 8px, transparent 8px, transparent 16px)` }} />
+            </div>
+
+            <Btn label="Volver al Inicio" onClick={onHome} variant="outlined" />
+          </div>
+        </div>
+      );
+    };
+
+    /* ════════════════════════════════════════════
+       ROOT APP
+    ════════════════════════════════════════════ */
+    const SCREENS = ['login', 'dashboard', 'contact', 'amount', 'receipt'];
+
+    const App = () => {
+      const [screen,  setScreen]  = useState('login');
+      const [contact, setContact] = useState({ name: '', bank: '', account: '' });
+      const [amount,  setAmount]  = useState(0);
+      const prevIdx = useRef(0);
+
+      const go = next => {
+        prevIdx.current = SCREENS.indexOf(screen);
+        setScreen(next);
+      };
+
+      const idx = SCREENS.indexOf(screen);
+      const dir = idx >= prevIdx.current ? 'slide-in-right' : 'slide-in-left';
+
+      const handleLogin        = ()    => go('dashboard');
+      const handleNewTransfer  = ()    => go('contact');
+      const handleContactDone  = data  => { setContact(data); go('amount'); };
+      const handleTransfer     = amt   => { setAmount(amt);  go('receipt'); };
+      const handleHome         = ()    => { setContact({ name:'', bank:'', account:'' }); setAmount(0); go('dashboard'); };
+
+      return (
+        <div className="phone">
+          <div key={screen} className={`screen ${dir}`}>
+            {screen === 'login'     && <LoginScreen     onLogin={handleLogin} />}
+            {screen === 'dashboard' && <DashboardScreen onNewTransfer={handleNewTransfer} />}
+            {screen === 'contact'   && <ContactScreen   onBack={() => go('dashboard')} onContinue={handleContactDone} />}
+            {screen === 'amount'    && <AmountScreen    contact={contact} onBack={() => go('contact')} onTransfer={handleTransfer} />}
+            {screen === 'receipt'   && <ReceiptScreen   contact={contact} amount={amount} onHome={handleHome} />}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
