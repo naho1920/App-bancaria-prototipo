@@ -5,7 +5,7 @@ export default function Logo() {
       width="168"
       height="35"
       viewBox="0 333.094 612 125.812"
-      aria-label="JP Morgan"
+      aria-label="P.J. Morgan"
     >
       <path
         fill="#321C0F"

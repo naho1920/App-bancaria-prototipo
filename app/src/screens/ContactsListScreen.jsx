@@ -44,16 +44,16 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: C.sec, marginBottom: '20px', padding: 0, fontFamily: T.body, fontSize: '14px' }}
         >
           <ArrowLeft size={20} />
-          Volver
+          Back
         </button>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             <h1 style={{ fontFamily: T.display, fontSize: '26px', fontWeight: '500', color: C.dark, marginBottom: '4px' }}>
-              Transferir a
+              Transfer to
             </h1>
             <p style={{ fontFamily: T.body, fontSize: '14px', color: C.sec }}>
-              Elige o añade un destinatario
+              Choose or add a recipient
             </p>
           </div>
           {/* Add new contact button */}
@@ -85,7 +85,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Buscar por nombre o banco..."
+            placeholder="Search by name or bank..."
             style={{
               width: '100%',
               padding: '13px 16px 13px 44px',
@@ -110,7 +110,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
               <Search size={28} color={C.muted} />
             </div>
             <p style={{ fontFamily: T.body, fontSize: '15px', color: C.muted, textAlign: 'center' }}>
-              No encontramos "{query}"
+              No results for "{query}"
             </p>
           </div>
         ) : (
@@ -119,10 +119,10 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
             {recent.length > 0 && (
               <>
                 <p style={{ fontFamily: T.body, fontSize: '12px', fontWeight: '600', color: C.muted, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '10px' }}>
-                  {query ? 'Resultados' : 'Frecuentes'}
+                  {query ? 'Results' : 'Frequent'}
                 </p>
 
-                {/* Frecuentes: horizontal scroll avatars */}
+                {/* Frequent: horizontal scroll avatars */}
                 {!query && (
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
                     {recent.map((contact, i) => (
@@ -144,7 +144,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
 
             {/* Full list */}
             <p style={{ fontFamily: T.body, fontSize: '12px', fontWeight: '600', color: C.muted, letterSpacing: '0.8px', textTransform: 'uppercase', marginBottom: '10px' }}>
-              {query ? '' : 'Todos los contactos'}
+              {query ? '' : 'All contacts'}
             </p>
             <div style={{ background: C.white, borderRadius: '20px', overflow: 'hidden', border: `1px solid ${C.surface}` }}>
               {filtered.map((contact, i) => (
@@ -206,7 +206,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
           }}
         >
           <UserPlus size={18} />
-          Añadir nuevo contacto
+          Add new contact
         </button>
       </div>
     </div>

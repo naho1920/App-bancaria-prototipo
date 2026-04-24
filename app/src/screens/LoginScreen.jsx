@@ -18,23 +18,23 @@ export default function LoginScreen({ onLogin }) {
 
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontFamily: T.display, fontSize: '26px', fontWeight: '500', color: C.dark, marginBottom: '6px', lineHeight: 1.2 }}>
-          Bienvenido de vuelta
+          Welcome back
         </h1>
         <p style={{ fontFamily: T.body, fontSize: '15px', color: C.sec, lineHeight: 1.5, letterSpacing: '0.16px' }}>
-          Ingresa a tu cuenta bancaria
+          Sign in to your bank account
         </p>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '12px' }}>
         <Field
-          label="Usuario"
+          label="Username"
           value={user}
           onChange={e => setUser(e.target.value)}
-          placeholder="tu@email.com"
+          placeholder="you@email.com"
           icon={User}
         />
         <Field
-          label="Contraseña"
+          label="Password"
           value={pass}
           onChange={e => setPass(e.target.value)}
           placeholder="••••••••"
@@ -53,16 +53,16 @@ export default function LoginScreen({ onLogin }) {
 
       <div style={{ textAlign: 'right', marginBottom: '28px' }}>
         <span style={{ fontFamily: T.body, fontSize: '13px', color: C.blue, cursor: 'pointer', letterSpacing: '0.16px' }}>
-          ¿Olvidaste tu contraseña?
+          Forgot your password?
         </span>
       </div>
 
-      <Btn label="Ingresar" onClick={onLogin} variant="dark" />
+      <Btn label="Sign In" onClick={onLogin} variant="dark" />
 
       <div style={{ textAlign: 'center', marginTop: '24px' }}>
         <span style={{ fontFamily: T.body, fontSize: '13px', color: C.sec }}>
-          ¿No tienes cuenta?{' '}
-          <span style={{ color: C.blue, fontWeight: '500', cursor: 'pointer' }}>Regístrate</span>
+          Don't have an account?{' '}
+          <span style={{ color: C.blue, fontWeight: '500', cursor: 'pointer' }}>Sign up</span>
         </span>
       </div>
     </div>

@@ -11,8 +11,8 @@ export default function AmountScreen({ contact, onBack, onTransfer }) {
   const [cents,   setCents]   = useState('');
 
   const display = decimal
-    ? `${Number(digits).toLocaleString('es-ES')}.${cents}`
-    : Number(digits).toLocaleString('es-ES');
+    ? `${Number(digits).toLocaleString('en-US')}.${cents}`
+    : Number(digits).toLocaleString('en-US');
 
   const tap = k => {
     if (k === 'back') {
@@ -41,7 +41,7 @@ export default function AmountScreen({ contact, onBack, onTransfer }) {
           style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', color: C.sec, marginBottom: '20px', padding: 0, fontFamily: T.body, fontSize: '14px' }}
         >
           <ArrowLeft size={20} />
-          Volver
+          Back
         </button>
 
         {/* Contact pill */}
@@ -62,14 +62,14 @@ export default function AmountScreen({ contact, onBack, onTransfer }) {
         {/* Amount display */}
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '8px' }}>
-            ¿Cuánto deseas enviar?
+            How much would you like to send?
           </p>
           <div style={{ fontFamily: T.display, fontSize: display.length > 8 ? '40px' : '54px', fontWeight: '600', color: C.dark, lineHeight: 1, letterSpacing: '-1px', transition: 'font-size 0.1s' }}>
             ${display}{decimal && cents.length === 0 ? '.' : ''}
           </div>
           {valid && (
             <p style={{ fontFamily: T.body, fontSize: '12px', color: C.muted, marginTop: '6px' }}>
-              ≈ {numericValue.toLocaleString('es-ES', { style: 'currency', currency: 'USD' })} USD
+              ≈ {numericValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} USD
             </p>
           )}
         </div>
@@ -90,7 +90,7 @@ export default function AmountScreen({ contact, onBack, onTransfer }) {
 
       {/* CTA */}
       <div style={{ padding: '12px 24px 32px', flexShrink: 0 }}>
-        <Btn label="Transferir" icon={Send} onClick={() => onTransfer(numericValue)} variant="dark" disabled={!valid} />
+        <Btn label="Transfer" icon={Send} onClick={() => onTransfer(numericValue)} variant="dark" disabled={!valid} />
       </div>
     </div>
   );

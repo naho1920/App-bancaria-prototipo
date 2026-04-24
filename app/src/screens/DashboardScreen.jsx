@@ -4,17 +4,17 @@ import Btn from '../components/Btn';
 import { C, T } from '../tokens';
 
 const quickActions = [
-  { Icon: Send,       label: 'Enviar' },
-  { Icon: Download,   label: 'Recibir' },
-  { Icon: CreditCard, label: 'Pagar' },
-  { Icon: Clock,      label: 'Historial' },
+  { Icon: Send,       label: 'Send' },
+  { Icon: Download,   label: 'Receive' },
+  { Icon: CreditCard, label: 'Pay' },
+  { Icon: Clock,      label: 'History' },
 ];
 
 const txs = [
-  { Icon: ShoppingBag,   label: 'Amazon Prime',           sub: 'Hoy, 10:24',  amount: '-$14.99',  pos: false },
-  { Icon: ArrowDownLeft, label: 'Transferencia recibida',  sub: 'Ayer, 18:05', amount: '+$500.00', pos: true  },
-  { Icon: Repeat,        label: 'Netflix',                 sub: '18 abr',      amount: '-$15.99',  pos: false },
-  { Icon: ShoppingBag,   label: 'Starbucks',               sub: '17 abr',      amount: '-$6.80',   pos: false },
+  { Icon: ShoppingBag,   label: 'Amazon Prime',        sub: 'Today, 10:24',     amount: '-$14.99',  pos: false },
+  { Icon: ArrowDownLeft, label: 'Received Transfer',   sub: 'Yesterday, 18:05', amount: '+$500.00', pos: true  },
+  { Icon: Repeat,        label: 'Netflix',              sub: 'Apr 18',           amount: '-$15.99',  pos: false },
+  { Icon: ShoppingBag,   label: 'Starbucks',            sub: 'Apr 17',           amount: '-$6.80',   pos: false },
 ];
 
 export default function DashboardScreen({ onNewTransfer }) {
@@ -27,7 +27,7 @@ export default function DashboardScreen({ onNewTransfer }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
             <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '3px', letterSpacing: '0.24px' }}>
-              Buenos días ☀️
+              Good morning ☀️
             </p>
             <h2 style={{ fontFamily: T.display, fontSize: '20px', fontWeight: '500', color: C.dark }}>
               Carlos Rodríguez
@@ -47,7 +47,7 @@ export default function DashboardScreen({ onNewTransfer }) {
         <div style={{ background: C.dark, borderRadius: '20px', padding: '24px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
             <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, letterSpacing: '0.24px' }}>
-              Saldo disponible
+              Available balance
             </p>
             <button
               onClick={() => setBalanceVisible(v => !v)}
@@ -60,7 +60,7 @@ export default function DashboardScreen({ onNewTransfer }) {
             {balanceVisible ? '$24,850.00' : '••••••'}
           </p>
           <div style={{ display: 'flex', gap: '10px' }}>
-            {[['Cuenta', '•••• 4821'], ['Tipo', 'Checking']].map(([lbl, val]) => (
+            {[['Account', '•••• 4821'], ['Type', 'Checking']].map(([lbl, val]) => (
               <div key={lbl} style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 14px' }}>
                 <p style={{ fontFamily: T.body, fontSize: '11px', color: C.muted, marginBottom: '2px' }}>{lbl}</p>
                 <p style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: C.white }}>{val}</p>
@@ -84,13 +84,13 @@ export default function DashboardScreen({ onNewTransfer }) {
 
       {/* CTA */}
       <div style={{ padding: '16px 24px 0' }}>
-        <Btn label="Nueva Transferencia" icon={Plus} onClick={onNewTransfer} variant="dark" />
+        <Btn label="New Transfer" icon={Plus} onClick={onNewTransfer} variant="dark" />
       </div>
 
       {/* Transactions */}
       <div style={{ padding: '20px 24px 40px' }}>
         <p style={{ fontFamily: T.display, fontSize: '16px', fontWeight: '500', color: C.dark, marginBottom: '12px' }}>
-          Movimientos recientes
+          Recent transactions
         </p>
         <div style={{ background: C.white, borderRadius: '20px', overflow: 'hidden' }}>
           {txs.map(({ Icon, label, sub, amount, pos }, i) => (

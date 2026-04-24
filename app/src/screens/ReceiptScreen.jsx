@@ -6,27 +6,27 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
   const [shared, setShared] = useState(false);
 
   const now    = new Date();
-  const date   = now.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
-  const time   = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-  const ref    = useState(() => `JPM-${Math.floor(Math.random() * 9e6 + 1e6)}`)[0];
-  const fmtAmt = amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const date   = now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
+  const time   = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const ref    = useState(() => `PJM-${Math.floor(Math.random() * 9e6 + 1e6)}`)[0];
+  const fmtAmt = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const rows = [
-    ['Destinatario', contact.name],
-    ['Banco destino', contact.bank],
-    ['Cuenta / CBU',  contact.account],
-    ...(contact.reference ? [['Ref. destinatario', contact.reference]] : []),
-    ['Fecha y hora',  `${date}, ${time}`],
-    ['N.º operación', ref],
-    ['Estado',        '✓ Completada'],
+    ['Recipient',        contact.name],
+    ['Destination bank', contact.bank],
+    ['Account / CBU',    contact.account],
+    ...(contact.reference ? [['Recipient ref.', contact.reference]] : []),
+    ['Date & time',      `${date}, ${time}`],
+    ['Operation no.',    ref],
+    ['Status',           '✓ Completed'],
   ];
 
   const dashedBorder = `repeating-linear-gradient(90deg, ${C.border} 0, ${C.border} 8px, transparent 8px, transparent 16px)`;
 
   const handleShare = async () => {
-    const text = `Comprobante de transferencia\n\nMonto: $${fmtAmt}\nDestinatario: ${contact.name}\nBanco: ${contact.bank}\nCuenta: ${contact.account}${contact.reference ? `\nRef. destinatario: ${contact.reference}` : ''}\nFecha: ${date}, ${time}\nN.º operación: ${ref}\nEstado: Completada`;
+    const text = `Transfer receipt\n\nAmount: $${fmtAmt}\nRecipient: ${contact.name}\nBank: ${contact.bank}\nAccount: ${contact.account}${contact.reference ? `\nRecipient ref.: ${contact.reference}` : ''}\nDate: ${date}, ${time}\nOperation no.: ${ref}\nStatus: Completed`;
     if (navigator.share) {
-      await navigator.share({ title: 'Comprobante JP Morgan', text });
+      await navigator.share({ title: 'Receipt — P.J. Morgan', text });
     } else {
       await navigator.clipboard.writeText(text);
       setShared(true);
@@ -44,16 +44,16 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
             <Check size={36} color={C.white} strokeWidth={2.5} />
           </div>
           <h1 style={{ fontFamily: T.display, fontSize: '22px', fontWeight: '600', color: C.dark, textAlign: 'center', marginBottom: '4px' }}>
-            ¡Transferencia Exitosa!
+            Transfer Successful!
           </h1>
           <p style={{ fontFamily: T.body, fontSize: '14px', color: C.sec, letterSpacing: '0.16px' }}>
-            El dinero está en camino
+            Your money is on its way
           </p>
         </div>
 
         {/* Amount hero */}
         <div style={{ background: C.dark, borderRadius: '20px', padding: '24px', textAlign: 'center', marginBottom: '14px' }}>
-          <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '8px' }}>Monto transferido</p>
+          <p style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, marginBottom: '8px' }}>Amount transferred</p>
           <p style={{ fontFamily: T.display, fontSize: '42px', fontWeight: '600', color: C.white, letterSpacing: '-0.5px', lineHeight: 1 }}>
             ${fmtAmt}
           </p>
@@ -68,7 +68,7 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
               style={{ padding: '13px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', borderBottom: i < rows.length - 1 ? `1px solid ${C.surface}` : 'none' }}
             >
               <span style={{ fontFamily: T.body, fontSize: '13px', color: C.muted, flexShrink: 0 }}>{lbl}</span>
-              <span style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: lbl === 'Estado' ? C.teal : C.dark, textAlign: 'right', wordBreak: 'break-all' }}>
+              <span style={{ fontFamily: T.body, fontSize: '13px', fontWeight: '500', color: lbl === 'Status' ? C.teal : C.dark, textAlign: 'right', wordBreak: 'break-all' }}>
                 {val}
               </span>
             </div>
@@ -79,7 +79,7 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
         {/* Actions */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-          {/* Compartir — primary */}
+          {/* Share — primary */}
           <button
             onClick={handleShare}
             style={{
@@ -101,10 +101,10 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
             }}
           >
             {shared ? <Check size={18} /> : <Share2 size={18} />}
-            {shared ? '¡Copiado al portapapeles!' : 'Compartir comprobante'}
+            {shared ? 'Copied to clipboard!' : 'Share receipt'}
           </button>
 
-          {/* Nueva transferencia — secondary */}
+          {/* New transfer — secondary */}
           <button
             onClick={onNewTransfer}
             style={{
@@ -125,10 +125,10 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
             }}
           >
             <RefreshCw size={18} />
-            Nueva transferencia
+            New transfer
           </button>
 
-          {/* Volver al inicio — ghost */}
+          {/* Back to home — ghost */}
           <button
             onClick={onHome}
             style={{
@@ -149,7 +149,7 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
             }}
           >
             <Home size={18} />
-            Volver al inicio
+            Back to home
           </button>
 
         </div>

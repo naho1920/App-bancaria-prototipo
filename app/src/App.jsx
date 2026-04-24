@@ -10,7 +10,7 @@ const SCREENS = ['login', 'dashboard', 'contacts', 'addContact', 'amount', 'rece
 
 export default function App() {
   const [screen,  setScreen]  = useState('login');
-  const [contact, setContact] = useState({ name: '', bank: '', account: '' });
+  const [contact, setContact] = useState({ name: '', bank: '', account: '', routing: '', address: '' });
   const [amount,  setAmount]  = useState(0);
   const prevIdx = useRef(0);
 
@@ -22,16 +22,12 @@ export default function App() {
   const idx = SCREENS.indexOf(screen);
   const dir = idx >= prevIdx.current ? 'slide-in-right' : 'slide-in-left';
 
-  // Seleccionar contacto existente → ir directo al monto
   const handleSelectContact = c => { setContact(c); go('amount'); };
-
-  // Guardar nuevo contacto → ir al monto
   const handleNewContact = data => { setContact(data); go('amount'); };
-
   const handleTransfer = amt => { setAmount(amt); go('receipt'); };
 
   const handleHome = () => {
-    setContact({ name: '', bank: '', account: '' });
+    setContact({ name: '', bank: '', account: '', routing: '', address: '' });
     setAmount(0);
     go('dashboard');
   };
