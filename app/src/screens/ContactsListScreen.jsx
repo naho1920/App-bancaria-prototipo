@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, Search, Plus, ChevronRight, UserPlus } from 'lucide-react';
+import { ArrowLeft, Search, Plus, UserPlus } from 'lucide-react';
 import { CONTACTS, AVATAR_COLORS } from '../data/contacts';
 import { C, T } from '../tokens';
 
@@ -32,8 +32,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
     c.bank.toLowerCase().includes(query.toLowerCase())
   );
 
-  const recent  = filtered.slice(0, 3);
-  const others  = filtered.slice(3);
+  const recent = filtered.slice(0, 3);
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', background: C.white }}>
@@ -122,20 +121,19 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
                   {query ? 'Results' : 'Frequent'}
                 </p>
 
-                {/* Frequent: horizontal scroll avatars */}
+                {/* Frequent: horizontal scroll avatars — display only, not clickable */}
                 {!query && (
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', overflowX: 'auto', paddingBottom: '4px' }}>
                     {recent.map((contact, i) => (
-                      <button
+                      <div
                         key={contact.id}
-                        onClick={() => onSelect(contact)}
-                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', flexShrink: 0, cursor: 'default' }}
                       >
                         <Avatar name={contact.name} index={i} size={52} />
                         <span style={{ fontFamily: T.body, fontSize: '12px', color: C.dark, fontWeight: '500', maxWidth: '60px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {contact.name.split(' ')[0]}
                         </span>
-                      </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -148,20 +146,16 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
             </p>
             <div style={{ background: C.white, borderRadius: '20px', overflow: 'hidden', border: `1px solid ${C.surface}` }}>
               {filtered.map((contact, i) => (
-                <button
+                <div
                   key={contact.id}
-                  onClick={() => onSelect(contact)}
                   style={{
                     width: '100%',
                     padding: '14px 16px',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '14px',
-                    background: 'none',
-                    border: 'none',
                     borderBottom: i < filtered.length - 1 ? `1px solid ${C.surface}` : 'none',
-                    cursor: 'pointer',
-                    textAlign: 'left',
+                    cursor: 'default',
                   }}
                 >
                   <Avatar name={contact.name} index={i} size={44} />
@@ -173,8 +167,7 @@ export default function ContactsListScreen({ onBack, onSelect, onAddNew }) {
                       {contact.bank} • {contact.account.slice(-4).padStart(contact.account.length, '•').replace(/•+/, '••••')}
                     </p>
                   </div>
-                  <ChevronRight size={18} color={C.border} />
-                </button>
+                </div>
               ))}
             </div>
 

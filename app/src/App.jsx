@@ -5,8 +5,9 @@ import ContactsListScreen from './screens/ContactsListScreen';
 import AddContactScreen   from './screens/AddContactScreen';
 import AmountScreen       from './screens/AmountScreen';
 import ReceiptScreen      from './screens/ReceiptScreen';
+import FinalScreen        from './screens/FinalScreen';
 
-const SCREENS = ['login', 'dashboard', 'contacts', 'addContact', 'amount', 'receipt'];
+const SCREENS = ['login', 'dashboard', 'contacts', 'addContact', 'amount', 'receipt', 'final'];
 
 export default function App() {
   const [screen,  setScreen]  = useState('login');
@@ -25,6 +26,7 @@ export default function App() {
   const handleSelectContact = c => { setContact(c); go('amount'); };
   const handleNewContact = data => { setContact(data); go('amount'); };
   const handleTransfer = amt => { setAmount(amt); go('receipt'); };
+  const handleFinish = () => go('final');
 
   const handleHome = () => {
     setContact({ name: '', bank: '', account: '', routing: '', address: '' });
@@ -65,9 +67,11 @@ export default function App() {
           <ReceiptScreen
             contact={contact}
             amount={amount}
-            onHome={handleHome}
-            onNewTransfer={() => { setAmount(0); go('contacts'); }}
+            onFinish={handleFinish}
           />
+        )}
+        {screen === 'final' && (
+          <FinalScreen />
         )}
       </div>
     </div>

@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { Check, Share2, RefreshCw, Home } from 'lucide-react';
 import { C, T } from '../tokens';
 
-export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }) {
-  const [shared, setShared] = useState(false);
-
+export default function ReceiptScreen({ contact, amount, onFinish }) {
   const now    = new Date();
   const date   = now.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
   const time   = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-  const ref    = useState(() => `PJM-${Math.floor(Math.random() * 9e6 + 1e6)}`)[0];
+  const [ref]  = useState(() => `PJM-${Math.floor(Math.random() * 9e6 + 1e6)}`);
   const fmtAmt = amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const rows = [
@@ -22,17 +20,6 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
   ];
 
   const dashedBorder = `repeating-linear-gradient(90deg, ${C.border} 0, ${C.border} 8px, transparent 8px, transparent 16px)`;
-
-  const handleShare = async () => {
-    const text = `Transfer receipt\n\nAmount: $${fmtAmt}\nRecipient: ${contact.name}\nBank: ${contact.bank}\nAccount: ${contact.account}${contact.reference ? `\nRecipient ref.: ${contact.reference}` : ''}\nDate: ${date}, ${time}\nOperation no.: ${ref}\nStatus: Completed`;
-    if (navigator.share) {
-      await navigator.share({ title: 'Receipt — P.J. Morgan', text });
-    } else {
-      await navigator.clipboard.writeText(text);
-      setShared(true);
-      setTimeout(() => setShared(false), 2500);
-    }
-  };
 
   return (
     <div className="screen-scroll" style={{ background: C.surface }}>
@@ -76,17 +63,16 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
           <div style={{ height: '1px', background: dashedBorder }} />
         </div>
 
-        {/* Actions */}
+        {/* Actions — all lead to the final screen */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
-          {/* Share — primary */}
           <button
-            onClick={handleShare}
+            onClick={onFinish}
             style={{
               width: '100%',
               padding: '14px 32px',
               borderRadius: '9999px',
-              background: shared ? C.teal : C.dark,
+              background: C.dark,
               color: C.white,
               border: 'none',
               fontFamily: T.display,
@@ -97,16 +83,14 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
               alignItems: 'center',
               justifyContent: 'center',
               gap: '8px',
-              transition: 'background 0.2s ease',
             }}
           >
-            {shared ? <Check size={18} /> : <Share2 size={18} />}
-            {shared ? 'Copied to clipboard!' : 'Share receipt'}
+            <Share2 size={18} />
+            Share receipt
           </button>
 
-          {/* New transfer — secondary */}
           <button
-            onClick={onNewTransfer}
+            onClick={onFinish}
             style={{
               width: '100%',
               padding: '14px 32px',
@@ -128,9 +112,8 @@ export default function ReceiptScreen({ contact, amount, onHome, onNewTransfer }
             New transfer
           </button>
 
-          {/* Back to home — ghost */}
           <button
-            onClick={onHome}
+            onClick={onFinish}
             style={{
               width: '100%',
               padding: '14px 32px',
